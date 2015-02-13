@@ -44,7 +44,8 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 	private $_file;
   
     protected $_arr_init;
-	protected $_prefix;
+	protected $_str_prefix;
+	protected $_arr_post_types;
 	protected $_str_localization_domain;  // TODO
 	  
 	public function __construct() {
@@ -59,12 +60,19 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 	  $this->setup();
 	 
 	  $arr_init_defaults = $this->init_defaults();
-	  $this->_arr_init = WPezHelpers::ez_array_merge(array($arr_init_defaults, $arr_args));
+	  $arr_todo = $this->cmb2_todo();
+	  $this->_arr_init = WPezHelpers::ez_array_merge(array($arr_init_defaults, $arr_todo, $arr_args));
 	  
-	  $this->_prefix = $this->_arr_init['prefix'];
+	  $this->_str_prefix = $this->_arr_init['prefix'];
+	  $this->_arr_post_types = $this->_arr_init['post_types'];
 	  $this->_str_localization_domain = $this->_arr_init['localization_domain'];
 	  
-	  add_filter( 'cmb2_meta_boxes', array($this, 'cmb2_meta_boxes_filter') );
+	  $int_priority = 10;
+	  if ( isset($this->_arr_init['priority']) ){
+	    $int_priority = $this->_arr_init['priority'];
+	  }
+	  
+	  add_filter( 'cmb2_meta_boxes', array($this, 'cmb2_meta_boxes_filter'), $int_priority );
 	 
 	}
 	
@@ -91,11 +99,23 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 		'active_true'							=> false,	// currently NA - use the active true "filtering"
 		'filters'								=> false, 	// currently NA
 		'arr_arg_validation'					=> false, 	// currently NA
-		
-		'prefix'								=> '_ez_cmb2_',  // you can also pass this in via the arr_args
-		'localization_domain'					=> 'TODO',
 		);
 	  return $arr_defaults;
+	}
+	
+	/**
+	 * at the very least you're gonna have to do these. 
+	 */
+	public function cmb2_todo(){
+	
+	  $arr_todo = array(
+	    'prefix'						=> '_ez_cmb2_',  // you can also pass this in via the arr_args
+		'post_types'					=> array( 'page', 'post' ),	
+		'localization_domain'			=> 'TODO',
+		'priority'						=> 10,
+		);
+		
+	  return $arr_todo;
 	}
 	
 /**
@@ -112,6 +132,10 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 	 * Finally you can also define the prefix here. This prefix will overide any others. 
 	 * That said, in theory you could make this prefix blank ('') and define the prefix 
 	 * on a field by field basis when you define the fields. If ya want. I guess :)
+	 *
+	 * = = = IMPORTANT = = =
+	 * The keys here (e.g., 'metabox_1') must be unqiue across *all* CMB2 setup definitions. If you
+	 * structure your code so different CMB2 setups are in not all in one mega blob, this is good to know.
 	 */
 	public function metabox_active(){
 	
@@ -144,7 +168,7 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 		  'id'            => 'test_metabox_XX',
 		  'title'         => __( 'Test Metabox XX', 'cmb2' ),
 		  // X - 'object_types'  => array( 'page', 'post' ), // Post type
-		  'post_types'  	=> array( 'page', 'post' ), // NEW & IMPROVED - this will be mapped to CMB2's 'object_types'
+		  'post_types'  	=> $this->_arr_post_types, // NEW & IMPROVED - this will be mapped to CMB2's 'object_types'
 		  'context'       => 'normal',
 		  'priority'      => 'high',
 		  // X - 'show_names'    => true, // Show field names on the left
@@ -162,7 +186,7 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 	    'cmb2' => array(
 		  'id'            => 'test_metabox_2',
 		  'title'         => __( 'Test Metabox 2', 'cmb2' ),
-		  'post_types'  	=> array( 'page', 'post' ),
+		  'post_types'  	=> $this->_arr_post_types,
 		  'context'       => 'normal',
 		  'priority'      => 'high',
 		  'layout'		=> 'col_one', 	// NEW & IMPROVED - this will be mapped to CMB2's 'show_names'		  
@@ -258,7 +282,7 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 	  return $arr_args;
 	}
 /**
- * ================ THAT'S IT - MAGIC COMPLETE =========================================
+ * ================ THAT'S IT - YOUR MAGIC COMPLETE =========================================
  */	
 	
 	/**
@@ -413,7 +437,7 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 		'active'	=> false,
 		'meta'		=> false,
 		'fields'	=> false,
-		'prefix'	=> $this->_prefix,
+		'prefix'	=> $this->_str_prefix,
 	  );
 	  return $arr_metabox_active_defaults;
 	}
