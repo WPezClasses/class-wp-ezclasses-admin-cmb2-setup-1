@@ -15,7 +15,11 @@
  */
  
 /**
- * == Change Log == 
+ * == Change Log ==
+ *
+ * == 0.5.1 - Wed 15 April 2015 ==
+ * --- ADDED: prefix to main key of array output by method cmb2_setup_do(). This makes a given (ezCMB2) template easier to reuse withing a given application. Previously identical keys would be overwritten.
+ *
  *
  * == 0.5.0 - Mon 1 Dec 2014 ==
  * --- Pop the champagne!
@@ -291,7 +295,7 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 	public function cmb2_meta_boxes_filter($arr_metaboxes){
 	
 	  $arr_the_magic = $this->cmb2_setup_do();
-	
+
 	  $arr_metaboxes = WPezHelpers::ez_array_merge(array($arr_the_magic, $arr_metaboxes));
 	  return $arr_metaboxes;
 	}
@@ -300,6 +304,8 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 	 * Take the ez CMB2 setup definitions and reworks them into CMB2 compatible.
 	 */
 	public function cmb2_setup_do(){
+
+        $str_prefix = trim($this->_str_prefix);
 	
 	  $arr_return_cmb2_setup = array();
 	  foreach ($this->metabox_active() as $str_key => $arr_args_active){
@@ -329,7 +335,7 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 		  // do we have some fields
 		  if ( ! empty ($arr_meta_fields) ){
 		  	$arr_meta['fields'] = $arr_meta_fields;
-			$arr_return_cmb2_setup[$str_key] = $arr_meta;
+			$arr_return_cmb2_setup[$str_prefix.$str_key] = $arr_meta;
 		  }
 	    } 
 	  }
@@ -340,6 +346,8 @@ if ( ! class_exists('Class_WP_ezClasses_Admin_CMB2_Setup_1') ) {
 	 * take the ez fields and reworks them into what CMB2 expects
 	 */
 	protected function cmb2_setup_fields($arr_this_mb = array()){
+
+        $str_prefix = trim($this->_str_prefix);
 	
 	  $arr_fields = $this->$arr_this_mb['fields']();
 	  
